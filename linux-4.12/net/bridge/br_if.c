@@ -29,6 +29,14 @@
 
 #include "br_private.h"
 
+#ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
+void (*fp_newvif)(struct net_bridge_port *p);
+void (*fp_delvif)(struct net_bridge_port *p);
+EXPORT_SYMBOL(fp_newvif);
+EXPORT_SYMBOL(fp_delvif);
+#endif
+
+
 /*
  * Determine initial path cost based on speed.
  * using recommendations from 802.1d standard
@@ -262,9 +270,6 @@ static void del_nbp(struct net_bridge_port *p)
 {
 	struct net_bridge *br = p->br;
 	struct net_device *dev = p->dev;
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-	struct bridge_credit_allocator *bca = p->br->bca;
-#endif
 
 	sysfs_remove_link(br->ifobj, p->dev->name);
 
@@ -301,15 +306,14 @@ static void del_nbp(struct net_bridge_port *p)
 	br_netpoll_disable(p);
 
 	call_rcu(&p->rcu, destroy_nbp_rcu);
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-	if(bca==NULL) {
-		printk(KERN_DEBUG "no bca detected during port deletion\n");
+#ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
+	if((*fp_delvif)!=NULL){
+		printk(KERN_DEBUG "MINKOO: del vif%d\n", p->vif->id);
+		fp_delvif(p);
 	}
-	//spin_lock_bh(&bca->credit_port_list_lock);
-	list_del(&p->cp_list);
-	//spin_unlock_bh(&bca->credit_port_list_lock);
-	bca->total_weight -= p->weight;
-	bca->credit_port_num--;
+	else{
+		printk(KERN_DEBUG "MINKOO: delvif is NULL\n");
+	}
 #endif
 }
 
@@ -318,20 +322,10 @@ void br_dev_delete(struct net_device *dev, struct list_head *head)
 {
 	struct net_bridge *br = netdev_priv(dev);
 	struct net_bridge_port *p, *n;
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-	struct bridge_credit_allocator *bca = br->bca;
-#endif
 
 	list_for_each_entry_safe(p, n, &br->port_list, list) {
 		del_nbp(p);
 	}
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-#ifdef CONFIG_BRIDGE_CREDIT_MODE_NO_TIMER_TEST
-	del_bca(bca);
-#else
-	disable_bca(bca);
-#endif
-#endif
 
 	br_fdb_delete_by_port(br, NULL, 0, 1);
 
@@ -369,13 +363,6 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
 {
 	struct net_bridge_port *p;
 	int index, err;
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-	struct bridge_credit_allocator *bca;
-	bca = br->bca;
-	if (list_empty(&br->port_list)) {
-		printk(KERN_DEBUG "br port start from empty\n");
-	}
-#endif
 
 	index = find_portno(br);
 	if (index < 0)
@@ -384,13 +371,10 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
 	p = kzalloc(sizeof(*p), GFP_KERNEL);
 	if (p == NULL)
 		return ERR_PTR(-ENOMEM);
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-	// separated because if need to send packet for init?
-	// 1. assign members inside the target
-	p->remaining_credit = ~0U;
-	p->min_credit = 0;		// arbitrary(not set)
-	p->max_credit = 0;		// arbitrary(not set)
-	p->weight = 1;			// arbitrary
+#ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
+	if((*fp_newvif)!=NULL){
+		fp_newvif(p);
+	}
 #endif
 	p->br = br;
 	dev_hold(dev);
@@ -403,42 +387,12 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
 	br_set_state(p, BR_STATE_DISABLED);
 	br_stp_port_timer_init(p);
 	err = br_multicast_add_port(p);
-#ifndef CONFIG_BRIDGE_CREDIT_MODE
+//minkoo: original version tested whether bca is working correctly or not when err_ptr
 	if (err) {
 		dev_put(dev);
 		kfree(p);
 		p = ERR_PTR(err);
 	}
-#else
-	if (err) {
-		dev_put(dev);
-		kfree(p);
-		p = ERR_PTR(err);
-	} else {
-		if(bca==NULL) {
-			printk(KERN_DEBUG "no bca detected during port addition\n");
-			printk(KERN_DEBUG "bca creation start\n");
-			err = add_bca(br);
-			if (err) {
-				dev_put(dev);
-				kfree(p);
-				return ERR_PTR(-ENOMEM);
-			}
-			bca = br->bca;
-		}
-		/* testing purpose */
-		p->weight = bca->credit_port_num + 1;
-		/*
-		if(p->weight == 1) p->min_credit = 1875000;
-		if(p->weight == 3) p->max_credit = 1875000;
-		*/
-		//spin_lock_bh(&bca->credit_port_list_lock);
-		list_add(&p->cp_list, &bca->credit_port_list);
-		//spin_unlock_bh(&bca->credit_port_list_lock);
-		bca->total_weight += p->weight;
-		bca->credit_port_num++;
-	}
-#endif
 	return p;
 }
 

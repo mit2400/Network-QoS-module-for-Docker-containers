@@ -23,6 +23,11 @@
 #include "br_private.h"
 #include "br_private_tunnel.h"
 
+#ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
+int (*fp_pay)(struct net_bridge_port *p, unsigned int packet_data_len);
+EXPORT_SYMBOL(fp_pay);
+#endif
+
 /* Hook for brouter */
 br_should_route_hook_t __rcu *br_should_route_hook __read_mostly;
 EXPORT_SYMBOL(br_should_route_hook);
@@ -287,12 +292,18 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 #endif
 
 	p = br_port_get_rcu(skb->dev);
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
+#ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
 	// len: all bytes of original packet
 	// data_len : each skb's packet bytes
-	if (!br_pay_credit(p, skb->data_len, skb->len, skb->data_len)) {
-		printk(KERN_DEBUG "packet:pay fail.\n");
-		goto drop;
+	//if (!br_pay_credit(p, skb->data_len, skb->len, skb->data_len)) {
+	//	printk(KERN_DEBUG "packet:pay fail.\n");
+	//	goto drop;
+	//}
+	if((*fp_pay)!=NULL){
+		if(!fp_pay(p,skb->data_len)){
+			printk(KERN_DEBUG "packet:pay fail.\n");
+			goto drop;
+		}
 	}
 #endif
 	if (p->flags & BR_VLAN_TUNNEL) {

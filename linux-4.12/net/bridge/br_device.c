@@ -414,7 +414,4 @@ void br_dev_setup(struct net_device *dev)
 	br_stp_timer_init(br);
 	br_multicast_init(br);
 	INIT_DELAYED_WORK(&br->gc_work, br_fdb_cleanup);
-#ifdef CONFIG_BRIDGE_CREDIT_MODE
-	add_bca(br);
-#endif
 }
