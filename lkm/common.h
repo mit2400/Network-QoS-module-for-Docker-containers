@@ -53,4 +53,11 @@ void new_vif(struct net_bridge_port *p);
 void del_vif(struct net_bridge_port *p);
 void update_CA(struct ancs_container *vif, int isplus);
 static void credit_accounting(unsigned long data);
-//
+
+//stuff for proc
+struct proc_dir_vif{
+	char name[10];
+	int id;
+	struct proc_dir_entry *dir;
+	struct proc_dir_entry *file[];
+};

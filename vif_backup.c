@@ -3,13 +3,6 @@
 struct credit_allocator *CA;
 //id for vif
 int vif_cnt;
-/*
-//proc
-static struct proc_dir_entry *proc_root_dir;
-static struct proc_dir_vif proc_vif[20];
-static int idx;
-int fileread = 0;
-*/
 
 static void credit_accounting(unsigned long data){
 	struct ancs_container *temp_vif, *next_vif;
@@ -82,115 +75,17 @@ skip:
 	
 out:
 //	spin_unlock(&netbk->active_vif_list_lock);
-	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(30));
+	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(50));
 	return;
 }
-/*
-static ssize_t vif_write(struct file *file, const char __user* user_buffer, size_t count, loff_t *ppos)
-{
-        char* filename = file->f_path.dentry->d_name.name;
-	char* input = strsep(&user_buffer,"\n");
-       struct ancs_vm *vif;
-	char *endptr;
-        unsigned int value = simple_strtol(input, &endptr, 10);
-        
-        if(endptr == input && *endptr != '\0')
-        {
-                printk("invalid input!\n");
-                return count;
-        }
 
-	vif = PDE_DATA(file_inode(file));	
-	if(!(vif)){
-		printk(KERN_INFO "NULL Data\n");
-		return 0;
-	}
-
-	if(!strcmp(filename, "min_credit"))
-        {
-		vif->min_credit = value;
-		goto proc_out;
-        }
-	
-	if(!strcmp(filename, "max_credit"))
-        {
-		vif->max_credit = value;
-		goto proc_out;
-        }
-
-	if(!strcmp(filename, "weight"))
-        {
-		vif->weight = value;
-		goto proc_out;
-        }
-	return count;
-	
-}
-
-static ssize_t vif_read(struct file *file, char *buf, size_t count, loff_t *ppos)
-{
-	char* filename = file->f_path.dentry->d_name.name;
-	struct ancs_vm *vif;	
-	unsigned int len;
-	
-	vif = PDE_DATA(file_inode(file));
-	if(!(vif)){
-                printk(KERN_INFO "NULL Data\n");
-                return 0;
-        }
-	if(!strcmp(filename, "min_credit")){
-		len = sprintf(buf, "%d\n", vif->min_credit);
-		goto proc_out;
-		}
-	else if(!strcmp(filename, "max_credit")){
-		len = sprintf(buf, "%d\n", vif->max_credit);
-		goto proc_out;
-		}
-	else if(!strcmp(filename, "weight")){
-		len = sprintf(buf, "%d\n", vif->weight);
-		goto proc_out;
-		}
-	else if(!strcmp(filename, "remaining_credit")){
-		len = sprintf(buf, "%d\n", vif->remaining_credit);
-		goto proc_out;
-		}
-	else if(!strcmp(filename, "used_credit")){
-       	len = sprintf(buf, "%d\n", vif->used_credit);
-		goto proc_out;
-		}
-	else if(!strcmp(filename, "pid")){
-		len = sprintf(buf, "%d\n", vif->vhost->pid);
-		goto proc_out;
-		}
-	else{
-		count = sprintf(buf, "%s", "ERROR");
-		return count;
-		}
-
-proc_out:
-	if(fileread == 0){
-                        fileread = 1;
-                        return len;
-                }
-                else
-                {
-                        fileread = 0;
-                        return 0;
-                }
-}
-
-static const struct file_operations vif_opt ={
-	.write = vif_write,
-	.read = vif_read,
-};
-*/
 int pay_credit(struct net_bridge_port *p, unsigned int packet_data_size){
 	//if date_len is zero then it means no fragment
 	printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u", p->vif->id, p->vif->remaining_credit, packet_data_size);
-	if(p->vif->remaining_credit == ~0U){
-		printk(KERN_INFO "PAYMENT SUCCESS\n");
-		return PAY_SUCCESS;
-	}
+	//if(p->vif->remaining_credit == ~0U){
+	//	printk(KERN_INFO "PAYMENT SUCCESS\n");
+	//	return PAY_SUCCESS;
+	//}
 	if(p->vif->remaining_credit < packet_data_size){
 		printk(KERN_INFO "PAYMENT FAILURE\n");
 		return PAY_FAIL;
@@ -288,7 +183,7 @@ static int __init vif_init(void)
 
 	//setting up timer for callback function
 	setup_timer(&CA->account_timer, credit_accounting, cpu );
-	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(30));
+	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(50));
 
 	printk(KERN_INFO "MINKOO: credit allocator init!!\n");	
 

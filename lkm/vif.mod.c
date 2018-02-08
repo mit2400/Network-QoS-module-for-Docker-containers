@@ -39,4 +39,4 @@ __attribute__((section(".modinfo"))) =
 "depends=bridge";
 
 
-MODULE_INFO(srcversion, "3CF881F565D6B2218B63FF7");
+MODULE_INFO(srcversion, "2B6417AD7C55AA9271ADFE5");
