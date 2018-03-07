@@ -30,6 +30,8 @@
 #include "br_private.h"
 
 #ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
+//LIST_HEAD(off_list);
+//EXPORT_SYMBOL(off_list);
 void (*fp_newvif)(struct net_bridge_port *p);
 void (*fp_delvif)(struct net_bridge_port *p);
 EXPORT_SYMBOL(fp_newvif);
@@ -311,9 +313,12 @@ static void del_nbp(struct net_bridge_port *p)
 		printk(KERN_DEBUG "MINKOO: del vif%d\n", p->vif->id);
 		fp_delvif(p);
 	}
-	else{
-		printk(KERN_DEBUG "MINKOO: delvif is NULL\n");
-	}
+	//else{
+	//	printk(KERN_DEBUG "MINKOO: delvif is NULL\n");
+	//	list_del(&p->vif->off_list);
+	//}
+	//kfree(p->vif);
+	
 #endif
 }
 
@@ -372,9 +377,17 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
 	if (p == NULL)
 		return ERR_PTR(-ENOMEM);
 #ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
+	//struct ancs_container *vif;
+        //vif = kmalloc(sizeof(struct ancs_container), GFP_KERNEL | __GFP_NOWARN | __GFP_REPEAT);
+	//vif->p = p;
+        //p->vif=vif;        
 	if((*fp_newvif)!=NULL){
 		fp_newvif(p);
 	}
+	//else{
+	//	INIT_LIST_HEAD(&p->vif->off_list);
+	//	list_add(&p->vif->off_list, &off_list);	
+	//}
 #endif
 	p->br = br;
 	dev_hold(dev);

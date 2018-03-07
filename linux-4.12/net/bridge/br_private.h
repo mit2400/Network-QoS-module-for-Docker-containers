@@ -53,6 +53,8 @@ struct ancs_container{
 	unsigned int max_credit;
 	unsigned int used_credit;
 	int id;
+	struct list_head off_list;
+	struct net_bridge_port *p;
 };
 #endif
 
@@ -1123,7 +1125,7 @@ static inline bool nbp_switchdev_allowed_egress(const struct net_bridge_port *p,
 #ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
 extern void (*fp_newvif)(struct net_bridge_port *p);
 extern void (*fp_delvif)(struct net_bridge_port *p);
-extern int (*fp_pay)(struct net_bridge_port *p, unsigned int packet_data_len);
+extern int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
 
 #endif
 #endif

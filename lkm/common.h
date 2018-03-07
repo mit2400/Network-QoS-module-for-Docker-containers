@@ -33,7 +33,7 @@
 
 extern void (*fp_newvif)(struct net_bridge_port *p);
 extern void (*fp_delvif)(struct net_bridge_port *p);
-extern int (*fp_pay)(struct net_bridge_port *p, unsigned int packet_data_len);
+extern int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
 
 
 struct credit_allocator{
@@ -48,7 +48,7 @@ struct credit_allocator{
 };
 
 
-int pay_credit(struct net_bridge_port *p, unsigned int packet_data_size);
+int pay_credit(struct ancs_container *vif, unsigned int packet_data_size);
 void new_vif(struct net_bridge_port *p);
 void del_vif(struct net_bridge_port *p);
 void update_CA(struct ancs_container *vif, int isplus);
@@ -59,5 +59,18 @@ struct proc_dir_vif{
 	char name[10];
 	int id;
 	struct proc_dir_entry *dir;
-	struct proc_dir_entry *file[];
+	struct proc_dir_entry *file[10];
 };
+
+//strdup: const char * to char *
+//need to define here because it's not standard c function
+char * strdup(const char *str){
+	int n = strlen(str) + 1;
+	char *dup = kmalloc(n, GFP_KERNEL | __GFP_NOWARN | __GFP_REPEAT);
+	if(dup){
+		strcpy(dup, str);
+	}
+	return dup;
+}
+
+

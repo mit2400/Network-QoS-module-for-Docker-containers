@@ -24,7 +24,7 @@
 #include "br_private_tunnel.h"
 
 #ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
-int (*fp_pay)(struct net_bridge_port *p, unsigned int packet_data_len);
+int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
 EXPORT_SYMBOL(fp_pay);
 #endif
 
@@ -300,7 +300,7 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 	//	goto drop;
 	//}
 	if((*fp_pay)!=NULL){
-		if(!fp_pay(p,skb->data_len)){
+		if(!fp_pay(p->vif,skb->data_len)){
 			printk(KERN_DEBUG "packet:pay fail.\n");
 			goto drop;
 		}
