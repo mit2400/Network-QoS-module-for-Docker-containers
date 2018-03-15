@@ -21,20 +21,18 @@ __attribute__((section("__versions"))) = {
 	{ 0x5c2e3421, __VMLINUX_SYMBOL_STR(del_timer) },
 	{ 0x5ee52022, __VMLINUX_SYMBOL_STR(init_timer_key) },
 	{ 0xeacae873, __VMLINUX_SYMBOL_STR(fp_delvif) },
-	{ 0x7a2af7b4, __VMLINUX_SYMBOL_STR(cpu_number) },
 	{ 0x8e196f42, __VMLINUX_SYMBOL_STR(fp_newvif) },
+	{ 0x7a2af7b4, __VMLINUX_SYMBOL_STR(cpu_number) },
 	{ 0xd197fc3f, __VMLINUX_SYMBOL_STR(fp_pay) },
-	{ 0xe914e41e, __VMLINUX_SYMBOL_STR(strcpy) },
-	{ 0x754d539c, __VMLINUX_SYMBOL_STR(strlen) },
 	{ 0xdb7305a1, __VMLINUX_SYMBOL_STR(__stack_chk_fail) },
 	{ 0xb742fd7, __VMLINUX_SYMBOL_STR(simple_strtol) },
 	{ 0x85df9b6c, __VMLINUX_SYMBOL_STR(strsep) },
 	{ 0x362ef408, __VMLINUX_SYMBOL_STR(_copy_from_user) },
 	{ 0xd2b09ce5, __VMLINUX_SYMBOL_STR(__kmalloc) },
-	{ 0x37a0cba, __VMLINUX_SYMBOL_STR(kfree) },
-	{ 0x6721577c, __VMLINUX_SYMBOL_STR(remove_proc_entry) },
 	{ 0xa38caae0, __VMLINUX_SYMBOL_STR(mod_timer) },
 	{ 0x15ba50a6, __VMLINUX_SYMBOL_STR(jiffies) },
+	{ 0x37a0cba, __VMLINUX_SYMBOL_STR(kfree) },
+	{ 0x6721577c, __VMLINUX_SYMBOL_STR(remove_proc_entry) },
 	{ 0xb44ad4b3, __VMLINUX_SYMBOL_STR(_copy_to_user) },
 	{ 0x88db9f48, __VMLINUX_SYMBOL_STR(__check_object_size) },
 	{ 0x8e8908c4, __VMLINUX_SYMBOL_STR(PDE_DATA) },
@@ -53,4 +51,4 @@ __attribute__((section(".modinfo"))) =
 "depends=bridge";
 
 
-MODULE_INFO(srcversion, "5F73032230649897AEB8589");
+MODULE_INFO(srcversion, "8299AB8BFE4E9C3F0EE4A17");

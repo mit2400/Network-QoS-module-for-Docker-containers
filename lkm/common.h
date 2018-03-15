@@ -18,14 +18,10 @@
 #include <linux/sched.h>
 #include <../../linux-4.12/net/bridge/br_private.h>
 
-
+//default value
 #define CONFIG_BRIDGE_CREDIT_MODE
-#define MAX_CREDIT 8000000	//kwlee
+#define MAX_CREDIT 1000000	
 #define MIN_CREDIT 100000
-
-//for update function
-#define PLUS	1
-#define MINUS	0
 
 //pay function
 #define PAY_SUCCESS	1
@@ -51,26 +47,11 @@ struct credit_allocator{
 int pay_credit(struct ancs_container *vif, unsigned int packet_data_size);
 void new_vif(struct net_bridge_port *p);
 void del_vif(struct net_bridge_port *p);
-void update_CA(struct ancs_container *vif, int isplus);
 static void credit_accounting(unsigned long data);
 
-//stuff for proc
 struct proc_dir_vif{
 	char name[10];
 	int id;
 	struct proc_dir_entry *dir;
 	struct proc_dir_entry *file[10];
 };
-
-//strdup: const char * to char *
-//need to define here because it's not standard c function
-char * strdup(const char *str){
-	int n = strlen(str) + 1;
-	char *dup = kmalloc(n, GFP_KERNEL | __GFP_NOWARN | __GFP_REPEAT);
-	if(dup){
-		strcpy(dup, str);
-	}
-	return dup;
-}
-
-

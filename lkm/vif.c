@@ -1,10 +1,13 @@
 #include "common.h"
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 extern struct list_head off_list;
 struct credit_allocator *CA;
 LIST_HEAD(active_vif_list);
 //id for vif
 int vif_cnt;
+int counter;
 
 static struct proc_dir_entry *proc_root_dir;
 static struct proc_dir_vif proc_vif[64];
@@ -12,59 +15,60 @@ int fileread = 0;
 
 static void credit_accounting(unsigned long data){
 	struct ancs_container *temp_vif, *next_vif;
-	int total;
-	unsigned int weight_left;
+	int total = CA->total_weight;
+	unsigned int weight_left=total;
 	unsigned int credit_left = 0;
 	unsigned int credit_total = MAX_CREDIT;
-	unsigned int credit_fair;
+	unsigned int credit_fair =0;
 	int credit_xtra =0;
-	static int counter =0;
-	counter++;
+	unsigned int min_credit_calc=0, max_credit_calc=0;
+
+	counter++;	
 
 	temp_vif=next_vif = NULL;
 
-
-	total = CA->total_weight;
-	weight_left = total;	
-//	printk(KERN_INFO "calling credit accounting function\n");
 	if(list_empty(&active_vif_list) || total ==0)	
 		goto out;
 	if(CA->credit_balance > 0)
-		credit_total += CA->credit_balance;
+		credit_total += CA->credit_balance;//limit credit balance value
+	
+	if(counter%10==0)	printk("MINKOO%d: credit total %u total:%u credit balance:%u\n",counter,credit_total, total, CA->credit_balance);
 
 	list_for_each_entry_safe(temp_vif, next_vif, &active_vif_list, vif_list){
 		if(!temp_vif)	goto out;
-	//	printk("MINKOO: vif: %p - vif_id:%d, credit:%u\n", temp_vif, temp_vif->id, temp_vif->remaining_credit);
-		
+		if(counter%10==0)	printk("MINKOO: unused credit:%u\n",temp_vif->remaining_credit);
 		weight_left -= temp_vif->weight;
-		credit_fair = ((credit_total * temp_vif->weight) + (total -1 ) / total);
-		temp_vif->remaining_credit = credit_fair;
+		credit_fair = ((credit_total * temp_vif->weight) + (total -1 )) / total;
+		temp_vif->remaining_credit += credit_fair;
+		
+		//min-max credit input is a percentage
+		if(temp_vif->min_credit!=0) min_credit_calc = (MAX_CREDIT/100) * temp_vif->min_credit;//
+		if(temp_vif->max_credit!=0) max_credit_calc = (MAX_CREDIT/100) * temp_vif->max_credit;//
 		
 		if(temp_vif->min_credit!=0 || temp_vif->max_credit!=0){
-			if(temp_vif->min_credit!=0 && temp_vif->remaining_credit < temp_vif->min_credit){
-				credit_total-=(temp_vif->min_credit - temp_vif->remaining_credit);
-				temp_vif->remaining_credit = temp_vif->min_credit;
-				total-=temp_vif->weight;
+			if(temp_vif->min_credit!=0 && temp_vif->remaining_credit < min_credit_calc){
+				credit_total-=(min_credit_calc - temp_vif->remaining_credit);
+				temp_vif->remaining_credit = min_credit_calc;
 				list_del(&temp_vif->vif_list);
 				list_add(&temp_vif->vif_list, &active_vif_list);
 			}
-			else if(temp_vif->max_credit!=0 && temp_vif->remaining_credit > temp_vif->max_credit){
-				credit_total+= (temp_vif->remaining_credit - temp_vif->max_credit);
-				temp_vif->remaining_credit = temp_vif->max_credit;
-				total-=temp_vif->weight;
+			else if(temp_vif->max_credit!=0 && temp_vif->remaining_credit > max_credit_calc){
+				credit_total+= (temp_vif->remaining_credit - max_credit_calc);
+				temp_vif->remaining_credit = max_credit_calc;
 				list_del(&temp_vif->vif_list);
 				list_add(&temp_vif->vif_list, &active_vif_list);
 			}
 			goto skip;
 		}
-		if(temp_vif->used_credit != 0){
+		
+		if(temp_vif->remaining_credit <= MAX_CREDIT){
 			credit_xtra = 1;
 		}
 		else
 		{
-			credit_left += (temp_vif->remaining_credit - credit_fair);
-
-			if(weight_left != 0U){
+			credit_left += temp_vif->remaining_credit - MAX_CREDIT;
+		
+			if(weight_left != 0){
 				credit_total += ((credit_left*total)+(weight_left - 1))/weight_left;
 				credit_left=0;
 			}
@@ -78,16 +82,16 @@ static void credit_accounting(unsigned long data){
 			else
 				temp_vif->remaining_credit = MAX_CREDIT;
 		}
+		
 skip:	
-	if(temp_vif->need_reschedule == true)
-		temp_vif->need_reschedule = false;
+		if(temp_vif->need_reschedule == true)
+			temp_vif->need_reschedule = false;
+		if(counter%10 == 0)printk("MINKOO: vif_id:%d, weight:%u, min:%d, max:%u, credit:%u, credit_fair:%u\n", temp_vif->id, temp_vif->weight, temp_vif->min_credit, temp_vif->max_credit, temp_vif->remaining_credit, credit_fair);
 	}
-//	printk("credit distribution - vif_id:%d, credit:%u\n", temp_vif->id, temp_vif->remaining_credit);
 	CA->credit_balance = credit_left;
-	
+	credit_left=0;
 out:
-//	spin_unlock(&netbk->active_vif_list_lock);
-	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(10));
+	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(50));
 	return;
 }
 
@@ -137,6 +141,7 @@ static ssize_t vif_write(struct file *file, const char __user *user_buffer, size
 
 	if(!strcmp(filename, "weight"))
         {
+		CA->total_weight += value - vif->weight;
 		vif->weight = value;
 		printk("MINKOO: weight:%d", vif->weight);
 		goto proc_out_w;
@@ -227,18 +232,18 @@ static const struct file_operations vif_opt ={
 
 int pay_credit(struct ancs_container *vif, unsigned int packet_data_size){
 	//if date_len is zero then it means no fragment
-	printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, packet_data_size);
-	if(vif->remaining_credit == ~0U){
-		printk(KERN_INFO "PAYMENT SUCCESS\n");
+	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, packet_data_size);
+	if(vif->remaining_credit == 0){
+		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
 	}
 	if(vif->remaining_credit < packet_data_size){
-		printk(KERN_INFO "PAYMENT FAILURE\n");
+		//printk(KERN_INFO "PAYMENT FAILURE\n");
 		return PAY_FAIL;
 	}
 	else{
 		vif->remaining_credit -= packet_data_size;
-		printk(KERN_INFO "PAYMENT SUCCESS\n");
+		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
 	}
 	return PAY_SUCCESS;
@@ -260,7 +265,7 @@ void new_vif(struct net_bridge_port *p){
 	vif->weight = 1;	//0 is arbitary value, give weight to check QOS algorithm working.
 	vif->min_credit = 0;		//arbitary
 	vif->max_credit = 0;		//arbitary
-	vif->remaining_credit = ~0U; 
+	vif->remaining_credit = 0; 
 	vif->used_credit = 0;	
 	vif->id = vif_cnt++;
 	
@@ -271,7 +276,8 @@ void new_vif(struct net_bridge_port *p){
 	list_add(&vif->vif_list, &active_vif_list);
 	
 	//update function for credit allocator
-	update_CA(vif, PLUS);
+	CA->total_weight += vif->weight;
+        CA->num_vif++;
 	
 	//need to implement: proc_fs new
 	idx = vif->id;
@@ -283,7 +289,6 @@ void new_vif(struct net_bridge_port *p){
 	proc_vif[idx].file[2] = proc_create_data("weight",0600, proc_vif[idx].dir, &vif_opt, vif);
 	proc_vif[idx].file[3] = proc_create_data("remaining_credit",0600, proc_vif[idx].dir, &vif_opt, vif);
 	proc_vif[idx].file[4] = proc_create_data("used_credit",0600, proc_vif[idx].dir, &vif_opt, vif);
-//	proc_vif[idx].file[5] = proc_create_data("pid",0600, proc_vif[idx].dir, &vif_opt, vif);
 
 	printk(KERN_INFO "MINKOO: new vif%d weight=%d, min=%d, max=%d\n", vif->id, vif->weight, vif->min_credit, vif->max_credit);
 }
@@ -291,8 +296,12 @@ void new_vif(struct net_bridge_port *p){
 void del_vif(struct net_bridge_port *p){
 	int idx;
 
-	if(p->vif == NULL){
-		printk(KERN_ERR "MINKOO: del vif pointer null err\n");
+	if(p == NULL){
+		printk(KERN_ERR "MINKOO: del port pointer null\n");
+		return;
+	}
+	else if(p->vif == NULL){
+		printk(KERN_ERR "MINKOO: del vif pointer null\n");
                 return;
 	}
 	else printk(KERN_INFO "MINKOO: delete vif%d\n", p->vif->id);
@@ -301,7 +310,9 @@ void del_vif(struct net_bridge_port *p){
 	list_del(&p->vif->vif_list);
 	
 	//update function for credit allocator
-	update_CA(p->vif, MINUS);
+	CA->total_weight -= p->vif->weight;
+        CA->num_vif--;
+	
 	
 	//need to implerment: proc_fs del	
 	idx = p->vif->id;
@@ -310,31 +321,18 @@ void del_vif(struct net_bridge_port *p){
 	remove_proc_entry("weight", proc_vif[idx].dir);
 	remove_proc_entry("remaining_credit", proc_vif[idx].dir);
 	remove_proc_entry("used_credit", proc_vif[idx].dir);
-//	remove_proc_entry("pid", proc_vif[idx].dir);
 	remove_proc_entry(proc_vif[idx].name, proc_root_dir);
 	
 	//free memory		
 	kfree(p->vif);
 }
 
-void update_CA(struct ancs_container *vif, int isplus){
-	if(isplus == PLUS){
-		CA->total_weight += vif->weight;
-		CA->num_vif++;
-	}
-	if(isplus == MINUS){
-		CA->total_weight -= vif->weight;
-		CA->num_vif--;
-	}
-}
-
 static int __init vif_init(void)
 {
-	//variables
 	int cpu = smp_processor_id();
-	//struct list_head *p;
 	//struct ancs_container *vif, *next_vif;
-	vif_cnt = 1;	
+	vif_cnt = 1;
+	counter = 0;	
 
 	//function pointer linking
 	fp_pay = &pay_credit;
@@ -356,7 +354,6 @@ static int __init vif_init(void)
 	
 	//need to implement: traverse off_list and add to CA list
 	//list_for_each_entry_safe(vif, next_vif, &off_list, off_list){
-	//	//vif = list_entry(p, struct ancs_container, off_list);
 	//	new_vif(vif);
 	//	printk("MINKOO: vif from off_list\n");
 	//	list_del(&vif->off_list);
