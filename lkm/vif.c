@@ -4,8 +4,7 @@ extern struct list_head off_list;
 struct credit_allocator *CA;
 LIST_HEAD(active_vif_list);
 //id for vif
-int vif_cnt;
-int counter;
+int vif_cnt, counter, reset;
 
 static struct proc_dir_entry *proc_root_dir;
 static struct proc_dir_vif proc_vif[64];
@@ -64,8 +63,8 @@ static void credit_accounting(unsigned long data){
 		}
 		else
 		{
-			credit_left += temp_vif->remaining_credit - MAX_CREDIT;
-		
+//			credit_left += (temp_vif->remaining_credit - MAX_CREDIT);
+			credit_left += (temp_vif->remaining_credit - credit_fair);		
 			if(weight_left != 0){
 				credit_total += ((credit_left*total)+(weight_left - 1))/weight_left;
 				credit_left=0;
