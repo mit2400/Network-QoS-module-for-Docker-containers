@@ -20,7 +20,7 @@
 
 //default value
 #define CONFIG_BRIDGE_CREDIT_MODE
-#define MAX_CREDIT 1000000	
+#define MAX_CREDIT 300000	
 #define MIN_CREDIT 100000
 
 //pay function

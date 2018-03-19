@@ -88,7 +88,7 @@ skip:
 	CA->credit_balance = credit_left;
 	credit_left=0;
 out:
-	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(50));
+	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(10));
 	return;
 }
 
