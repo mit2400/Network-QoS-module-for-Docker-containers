@@ -1,6 +1,4 @@
 #include "common.h"
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 extern struct list_head off_list;
 struct credit_allocator *CA;

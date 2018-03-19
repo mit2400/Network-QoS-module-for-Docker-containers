@@ -27,6 +27,9 @@
 #define PAY_SUCCESS	1
 #define PAY_FAIL	0
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+
 extern void (*fp_newvif)(struct net_bridge_port *p);
 extern void (*fp_delvif)(struct net_bridge_port *p);
 extern int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
