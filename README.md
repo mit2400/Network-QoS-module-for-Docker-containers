@@ -26,7 +26,7 @@ This module supports work-conserving.
 1. kernel compile in linux-4.12 folder
    - You must either apply kernel patch or install linux kernel-4.12 uploaded here. 
    - We recommend installing linux-4.12 because kernel might fail to compile on other version of linux.
-   - After you download kernel source code, change directory to linux folder and compile kernel using command below.
+   - After you download kernel source code, change directory to linux folder and compile kernel using command below.
    
    	> make
    	> make install
