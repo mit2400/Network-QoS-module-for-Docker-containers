@@ -12,7 +12,7 @@ This repository includes loadable kernel module which dynamically allocates netw
    - Setting lower limit can be done by changing "minimum_bandwidth" as above.
    - Ex) If you set maximum bandwidth 50, then container gets 50% of bandwidth capacity. Bandwidth capacity must be adjusted depending on the device which the module is installed on).
 3. This module supports work-conserving.
-   - If there's container not fully using it's bandwidth, then remaining bandwidth is reallocated to other container's so that utilization of network resources can be maximized.
+   - If there's container not fully using it's bandwidth, then remaining bandwidth is reallocated to other container's so that utilization of network resources can be maximized.
 
 ## Install guide
 1. kernel setting
