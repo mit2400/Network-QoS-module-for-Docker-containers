@@ -29,7 +29,8 @@ This module supports work-conserving.
    - After you download kernel source code, change directory to linux folder and compile kernel using command below.
    
    	> make
-   	> make install
+	
+	> make install
 
    - Add "-j <number of core>" option to compile faster.
 
