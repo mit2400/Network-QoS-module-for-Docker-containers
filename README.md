@@ -23,9 +23,9 @@ This module supports work-conserving.
 
 ## Install guide
 
-1. kernel compile in linux-4.12 folder
+1. compile kernel in linux-4.12 folder
    - You must either apply kernel patch or install linux kernel-4.12 uploaded here. 
-   - We recommend installing linux-4.12 because kernel might fail to compile on other version of linux.
+   - We recommend installing linux-4.12 because compilation may fail on other version of linux.
    - After you download kernel source code, change directory to linux folder and compile kernel using command below.
 
 	```
@@ -33,19 +33,36 @@ This module supports work-conserving.
 	make install
 	```
 
-   - Add "-j <number of cores>" option to compile faster. If you have 4 cores, use command below
+   - Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
 	
 	```
 	make -j 4
 	```
+2. change booting kernel
+   - ...
 
-2. install scheduling module 
-  - "lkm" folder has a module source code, header file, Makefile.
-  - change current directory to lkm folder and compile a module using "make". 
-  - If compile is done, you would get a loadable kernel module "vif.ko".
-  - Use "insmod vif.ko" command to install a module to kernel.
-  - Use "lsmod" command to show which loadable kernel modules are currently loaded.
-  - Use "rmmod vif.ko" command to remove a module.
+3. install scheduling module 
+   - "lkm" folder has a module source code, header file, Makefile.
+   - change current directory to "lkm" folder and compile a module using "make". 
+   - When compilation is done, you would get a loadable kernel module "vif.ko".
+   
+   - a command that add a module to kernel.
+
+	```
+	insmod vif.ko
+	```
+	
+   - a command that shows which loadable kernel modules are currently loaded.
+   
+   	```
+	lsmod
+	```
+
+   - a command that removes a module.
+   
+	```
+	rmmod vif.ko
+	```
 
 ## how to use ----working on.....
   - run or start docker container
