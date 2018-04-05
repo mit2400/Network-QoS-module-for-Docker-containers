@@ -33,8 +33,8 @@ This module supports work-conserving.
 	make install
 	```
 
-   - Add "-j <number of core>" option to compile faster.
-
+   - Add "-j <number of cores>" option to compile faster. If you have 4 cores, use command below
+	
 	```
 	make -j 4
 	```
