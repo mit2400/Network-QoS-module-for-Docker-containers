@@ -34,7 +34,7 @@ This module supports work-conserving.
 	```
 
    - Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
-
+	
 	```
 	make -j 4
 	```
@@ -55,12 +55,12 @@ This module supports work-conserving.
 	
    - a command that shows which loadable kernel modules are currently loaded.
 
-   	```
+	```
 	lsmod
 	```
 
    - a command that removes a module.
-
+   
 	```
 	rmmod vif.ko
 	```
