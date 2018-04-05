@@ -27,14 +27,13 @@ This module supports work-conserving.
    - You must either apply kernel patch or install linux kernel-4.12 uploaded here. 
    - We recommend installing linux-4.12 because kernel might fail to compile on other version of linux.
    - After you download kernel source code, change directory to linux folder and compile kernel using command below.
-   
-       make
-       make install
+
+	make
+	make install
 
    - Add "-j <number of core>" option to compile faster.
 
-       make -j 4
-
+	make -j 4
 
 2. install scheduling module 
   - "lkm" folder has a module source code, header file, Makefile.
