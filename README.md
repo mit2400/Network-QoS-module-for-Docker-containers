@@ -5,8 +5,6 @@ This repository includes loadable kernel module which dynamically allocates netw
 > *ANCS: Achieving QoS through Dynamic Allocation of Network Resources in Virtualized Clouds
 
 
-
-
 ## Scheduling policies
 
 This module allocates network bandwidth of containers dynamically and propotionally to weight. 
