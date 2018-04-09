@@ -83,7 +83,7 @@ This module supports work-conserving.
   
 #### Printing attributes of each container.
   
-	- A command that prints weight of second container. vif stands for virtual interface.
+   - A command that prints weight of second container. vif stands for virtual interface.
 
 			cat /proc/oslab/vif2/weight		
 	
