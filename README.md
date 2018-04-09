@@ -52,24 +52,23 @@ This module supports work-conserving.
 
 2. install scheduling module 
    
-   - "lkm" folder has a module source code, header file, Makefile.
-   - change current directory to "lkm" folder and compile a module using "make". 
-   - When compilation is done, you would get a loadable kernel module "vif.ko".
+	- "lkm" folder has a module source code, header file, Makefile.
+	- change current directory to "lkm" folder and compile a module using "make". 
+	- When compilation is done, you would get a loadable kernel module "vif.ko".
    
-   - a command that add a module to kernel.
-	```
-	insmod vif.ko
-	```
-
-   - a command that shows which loadable kernel modules are currently loaded.
-	```
-	lsmod
-	```
+	- a command that add a module to kernel.
 	
-   - a command that removes a module.
-	```
-	rmmod vif.ko
-	```
+			insmod vif.ko
+	
+
+	- a command that shows which loadable kernel modules are currently loaded.
+	
+			lsmod
+	
+	- a command that removes a module.
+	
+			rmmod vif.ko
+	
 
 ## How to use 
 
