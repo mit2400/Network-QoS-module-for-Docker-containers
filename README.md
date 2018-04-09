@@ -24,27 +24,21 @@ This module supports work-conserving.
 ## Install guide
 
 1. compile kernel in linux-4.12 folder
-   - You must either apply kernel patch or install linux kernel-4.12 uploaded here. 
-   - We recommend installing linux-4.12 because compilation may fail on other version of linux.
-   - After you download kernel source code, change directory to linux folder and compile kernel using command below.
-   	
-	```		
-	make
-	make install
-	```
+   
+	- You must either apply kernel patch or install linux kernel-4.12 uploaded here. 
+   	- We recommend installing linux-4.12 because compilation may fail on other version of linux.
+   	- After you download kernel source code, change directory to linux folder and compile kernel using command below.
+  
+  		make
+		make install
+
+	
+	- Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
+
+		make -j 4
 
 
-
-
-   - Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
-
-	```
-	make -j 4
-	```
-
-
-
-   - reboot with installed kernel.
+	- reboot with installed kernel.
 
 
 
