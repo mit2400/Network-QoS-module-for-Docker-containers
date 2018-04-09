@@ -5,6 +5,8 @@ This repository includes loadable kernel module which dynamically allocates netw
 > *ANCS: Achieving QoS through Dynamic Allocation of Network Resources in Virtualized Clouds
 
 
+
+
 ## Scheduling policies
 
 This module allocates network bandwidth of containers dynamically and propotionally to weight. 
@@ -21,6 +23,10 @@ You can set upper, lower limit of container's bandwidth.
 This module supports work-conserving.
    - If there's container not fully using it's bandwidth, then remaining bandwidth is reallocated to other container's so that utilization of network resources can be maximized.
 
+
+
+
+
 ## Install guide
 
 1. compile kernel in linux-4.12 folder
@@ -29,16 +35,18 @@ This module supports work-conserving.
    	- We recommend installing linux-4.12 because compilation may fail on other version of linux.
    	- After you download kernel source code, change directory to linux folder and compile kernel using command below.
   
-  		make
-		make install
+  			make
+			make install
 
 	
 	- Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
 
-		make -j 4
+			make -j 4
 
 
 	- reboot with installed kernel.
+
+
 
 
 
