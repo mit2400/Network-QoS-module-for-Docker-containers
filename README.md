@@ -89,11 +89,14 @@ This module supports work-conserving.
    -set value of weight, minimum bandwidth and maximum bandwidth of each container.
 	
 	```
-	echo 2 > /proc/oslab/vif1/weight	//sets a weight of first continaer "2". A bigger weight means a bigger priority.
+	echo 2 > /proc/oslab/vif1/weight	
+	//sets a weight of first continaer "2". A bigger weight means a bigger priority.
 						
-	echo 50 > /proc/oslab/vif1/max_credit 	//sets maximum bandwidth of first container "50"
-						//meaning this container can get 50% of bandwidth capacity at maximum.
+	echo 50 > /proc/oslab/vif1/max_credit 	
+	//sets maximum bandwidth of first container "50"
+	//meaning this container can get 50% of bandwidth capacity at maximum.
 	
-	echo 30 > /proc/oslab/vif1/min_credit	//sets minimum bandwidth of first container "30"
-						//meaning this container must get 30% of bandwidth capacity at least.
+	echo 30 > /proc/oslab/vif1/min_credit
+	//sets minimum bandwidth of first container "30"
+	//meaning this container must get 30% of bandwidth capacity at least.
 	```
