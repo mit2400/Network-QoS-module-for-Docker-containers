@@ -39,10 +39,9 @@ This module supports work-conserving.
 	make -j 4
 	```
 
-2. change booting kernel
-   - ...
+   - reboot with installed kernel.
 
-3. install scheduling module 
+2. install scheduling module 
    - "lkm" folder has a module source code, header file, Makefile.
    - change current directory to "lkm" folder and compile a module using "make". 
    - When compilation is done, you would get a loadable kernel module "vif.ko".
