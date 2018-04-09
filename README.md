@@ -67,17 +67,23 @@ This module supports work-conserving.
 ## how to use 
 
 # run or start docker container after adding a module
-	-must install a module first because containers which are executed before a module installation are not affected by a module
+  - must install a module first because containers which are executed before a module installation are not affected by a module
 
 # use proc file system to set weight, min, max bandwidth of each container if needed
 
   - print value of weight, minimum bandwidth and maximum bandwidth of each container.
   - weight is set to 1 by default
   - min, max credit is set to 0 by default, meaning it has no upper, under limitaion of bandwidth.
-  	```
-	cat /proc/oslab/vif2/weight		//shows weight of container 2. vif stands for virtual interface.
-	cat /proc/oslab/vif1/max_credit		//shows a maximum bandwidth of container 1 in form of  percentage of bandwidth capacity.
-	cat /proc/oslab/vif1/min_credit		//shows a minimum bandwidth of container 1 in form of  percentage of bandwidth capacity.
+  	
+	```
+	cat /proc/oslab/vif2/weight		
+	//shows weight of second container. vif stands for virtual interface.
+	
+	cat /proc/oslab/vif1/max_credit		\
+	//shows a maximum bandwidth of first container in form of  percentage of bandwidth capacity.
+	
+	cat /proc/oslab/vif1/min_credit		
+	//shows a minimum bandwidth of first container in form of  percentage of bandwidth capacity.
 	```
 
    -set value of weight, minimum bandwidth and maximum bandwidth of each container.
@@ -90,5 +96,4 @@ This module supports work-conserving.
 	
 	echo 30 > /proc/oslab/vif1/min_credit	//sets minimum bandwidth of first container "30"
 						//meaning this container must get 30% of bandwidth capacity at least.
-	
 	```
