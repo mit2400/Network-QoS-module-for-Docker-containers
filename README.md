@@ -32,15 +32,18 @@ This module supports work-conserving.
 	make
 	make install
 	```
-	
-	
+
+
+
+
    - Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
-	
+
 	```
 	make -j 4
 	```
-	
-	
+
+
+
    - reboot with installed kernel.
 
 
@@ -68,12 +71,14 @@ This module supports work-conserving.
 
 ## How to use 
 
-### Run or start docker container after adding a module
+#### Run or start docker container after adding a module
    - must install a module first because containers which are executed before a module installation are not affected by a module
 
-### Use proc file system to set weight, min, max bandwidth of each container if needed
+
+#### Use proc file system to set weight, min, max bandwidth of each container if needed
    - weight is set to 1 by default
    - min, max credit is set to 0 by default, meaning it has no upper, under limitaion of bandwidth.
+    
   
 #### Printing attributes of each container.
   
@@ -88,6 +93,7 @@ This module supports work-conserving.
    - A command that prints a minimum bandwidth of first container in form of  percentage of bandwidth capacity.
 	
 			cat /proc/oslab/vif1/min_credit		
+	
 	
 	
 #### setting attributes of each container
