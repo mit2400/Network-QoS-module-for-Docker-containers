@@ -99,8 +99,7 @@ This module supports work-conserving.
 	
 	
 	
-#### S
-etting attributes of each container
+#### Setting attributes of each container
 	
    - A command that sets a weight of first continaer "2". A bigger weight means a bigger priority.
 	
