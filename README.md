@@ -88,11 +88,9 @@ This module supports work-conserving.
 			cat /proc/oslab/vif2/weight		
 	
 	
-	
    - A command that prints a maximum bandwidth of first container in form of  percentage of bandwidth capacity.
 
 			cat /proc/oslab/vif1/max_credit		
-	
 	
 	
    - A command that prints a minimum bandwidth of first container in form of  percentage of bandwidth capacity.
@@ -101,20 +99,18 @@ This module supports work-conserving.
 	
 	
 	
-#### setting attributes of each container
+#### S
+etting attributes of each container
 	
    - A command that sets a weight of first continaer "2". A bigger weight means a bigger priority.
 	
 			echo 2 > /proc/oslab/vif1/weight	
 	
 
-
-
    - A command that sets maximum bandwidth of first container "50". 
    - meaning this container can get 50% of bandwidth capacity at maximum.
 	
 			echo 50 > /proc/oslab/vif1/max_credit 	
-	
 	
 	
    - A command that sets minimum bandwidth of first container "30"
