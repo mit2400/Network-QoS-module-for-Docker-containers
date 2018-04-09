@@ -27,14 +27,14 @@ This module supports work-conserving.
    - You must either apply kernel patch or install linux kernel-4.12 uploaded here. 
    - We recommend installing linux-4.12 because compilation may fail on other version of linux.
    - After you download kernel source code, change directory to linux folder and compile kernel using command below.
-
-	```
+   	
+	```		
 	make
 	make install
 	```
-
+	
    - Add "-j <number of cores>" option to compile faster. Assume that there're 4 cores, use command below
-
+	
 	```
 	make -j 4
 	```
@@ -47,56 +47,58 @@ This module supports work-conserving.
    - When compilation is done, you would get a loadable kernel module "vif.ko".
    
    - a command that add a module to kernel.
-
 	```
 	insmod vif.ko
 	```
 
    - a command that shows which loadable kernel modules are currently loaded.
-
 	```
 	lsmod
 	```
-
+	
    - a command that removes a module.
-
 	```
 	rmmod vif.ko
 	```
 
-## how to use 
+## How to use 
 
-# run or start docker container after adding a module
-  - must install a module first because containers which are executed before a module installation are not affected by a module
+### Run or start docker container after adding a module
+    - must install a module first because containers which are executed before a module installation are not affected by a module
 
-# use proc file system to set weight, min, max bandwidth of each container if needed
+### Use proc file system to set weight, min, max bandwidth of each container if needed
+    - weight is set to 1 by default
+    - min, max credit is set to 0 by default, meaning it has no upper, under limitaion of bandwidth.
+  
+#### Prints attributes of each container.
+  
+- prints weight of second container. vif stands for virtual interface.
 
-  - print value of weight, minimum bandwidth and maximum bandwidth of each container.
-  - weight is set to 1 by default
-  - min, max credit is set to 0 by default, meaning it has no upper, under limitaion of bandwidth.
-  	
-	```
-	cat /proc/oslab/vif2/weight		
-	//shows weight of second container. vif stands for virtual interface.
+		cat /proc/oslab/vif2/weight		
 	
-	cat /proc/oslab/vif1/max_credit		\
-	//shows a maximum bandwidth of first container in form of  percentage of bandwidth capacity.
-	
-	cat /proc/oslab/vif1/min_credit		
-	//shows a minimum bandwidth of first container in form of  percentage of bandwidth capacity.
-	```
+- prints a maximum bandwidth of first container in form of  percentage of bandwidth capacity.
 
-   -set value of weight, minimum bandwidth and maximum bandwidth of each container.
+		cat /proc/oslab/vif1/max_credit		
 	
-	```
-	echo 2 > /proc/oslab/vif1/weight	
-	//sets a weight of first continaer "2". A bigger weight means a bigger priority.
-						
-	echo 50 > /proc/oslab/vif1/max_credit 	
-	//sets maximum bandwidth of first container "50"
-	//meaning this container can get 50% of bandwidth capacity at maximum.
+- prints a minimum bandwidth of first container in form of  percentage of bandwidth capacity.
 	
-	echo 30 > /proc/oslab/vif1/min_credit
-	//sets minimum bandwidth of first container "30"
-	//meaning this container must get 30% of bandwidth capacity at least.
-	```
+		cat /proc/oslab/vif1/min_credit		
+	
+	
+#### sets attributes of each container
+	
+- sets a weight of first continaer "2". A bigger weight means a bigger priority.
+
+		echo 2 > /proc/oslab/vif1/weight	
+	
+	
+- sets maximum bandwidth of first container "50". 
+- meaning this container can get 50% of bandwidth capacity at maximum.
+	
+		echo 50 > /proc/oslab/vif1/max_credit 	
+	
+- sets minimum bandwidth of first container "30"
+- meaning this container must get 30% of bandwidth capacity at least.
+	
+		echo 30 > /proc/oslab/vif1/min_credit
+	
