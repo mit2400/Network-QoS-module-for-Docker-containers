@@ -27,13 +27,13 @@ static void credit_accounting(unsigned long data){
 	if(list_empty(&active_vif_list) || total ==0)	
 		goto out;
 	if(CA->credit_balance > 0)
-		credit_total += CA->credit_balance;//limit credit balance value
+		credit_total += CA->credit_balance;
 	
-	if(counter%10==0)	printk("MINKOO%d: credit total %u total:%u credit balance:%u\n",counter,credit_total, total, CA->credit_balance);
+	printk("MINKOO%d: credit total %u total:%u credit balance:%u\n",counter,credit_total, total, CA->credit_balance);
 
 	list_for_each_entry_safe(temp_vif, next_vif, &active_vif_list, vif_list){
 		if(!temp_vif)	goto out;
-		if(counter%10==0)	printk("MINKOO: unused credit:%u\n",temp_vif->remaining_credit);
+		printk("MINKOO: unused credit:%u\n",temp_vif->remaining_credit);
 		weight_left -= temp_vif->weight;
 		credit_fair = ((credit_total * temp_vif->weight) + (total -1 )) / total;
 		temp_vif->remaining_credit += credit_fair;
@@ -46,20 +46,22 @@ static void credit_accounting(unsigned long data){
 			if(temp_vif->min_credit!=0 && temp_vif->remaining_credit < min_credit_calc){
 				credit_total-=(min_credit_calc - temp_vif->remaining_credit);
 				temp_vif->remaining_credit = min_credit_calc;
-				total -= temp_vif->weight;
 				list_del(&temp_vif->vif_list);
 				list_add(&temp_vif->vif_list, &active_vif_list);
 			}
 			else if(temp_vif->max_credit!=0 && temp_vif->remaining_credit > max_credit_calc){
 				credit_total+= (temp_vif->remaining_credit - max_credit_calc);
 				temp_vif->remaining_credit = max_credit_calc;
-				total -= temp_vif->weight;
 				list_del(&temp_vif->vif_list);
 				list_add(&temp_vif->vif_list, &active_vif_list);
 			}
 			goto skip;
 		}
 		
+		credit_left += (temp_vif->remaining_credit - credit_fair);
+		temp_vif->remaining_credit = credit_fair;  
+
+/*
 		if(temp_vif->remaining_credit <= MAX_CREDIT){
 			credit_xtra = 1;
 		}
@@ -70,27 +72,31 @@ static void credit_accounting(unsigned long data){
 			if(weight_left != 0){
 				credit_total += ((credit_left*total)+(weight_left - 1))/weight_left;
 				credit_left=0;
-			}
+		}
+
 			if(credit_xtra){
 				list_del(&temp_vif->vif_list);
 				list_add(&temp_vif->vif_list, &active_vif_list);
 			}
-			
+
+
+//			temp_vif->remaining_credit = credit_fair;			
 			if(CA->num_vif > 1)
 				temp_vif->remaining_credit = credit_fair;
 			else
 				temp_vif->remaining_credit = MAX_CREDIT;
+
 		}
-		
+*/		
 skip:	
 		if(temp_vif->need_reschedule == true)
 			temp_vif->need_reschedule = false;
-		if(counter%10 == 0)printk("MINKOO: vif_id:%d, weight:%u, min:%d, max:%u, credit:%u, credit_fair:%u\n", temp_vif->id, temp_vif->weight, temp_vif->min_credit, temp_vif->max_credit, temp_vif->remaining_credit, credit_fair);
+		printk("MINKOO: vif_id:%d, weight:%u, min:%d, max:%u, credit:%u, credit_fair:%u\n", temp_vif->id, temp_vif->weight, temp_vif->min_credit, temp_vif->max_credit, temp_vif->remaining_credit, credit_fair);
 	}
 	CA->credit_balance = credit_left;
 	credit_left=0;
 out:
-	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(100));
+	mod_timer(&CA->account_timer, jiffies + msecs_to_jiffies(10));
 	return;
 }
 
@@ -261,7 +267,7 @@ void new_vif(struct net_bridge_port *p){
 	vif = kmalloc(sizeof(struct ancs_container), GFP_KERNEL | __GFP_NOWARN | __GFP_REPEAT);
 	INIT_LIST_HEAD(&vif->vif_list);
 	vif->need_reschedule = false;
-	vif->weight = 1;	//0 is arbitary value, give weight to check QOS algorithm working.
+	vif->weight = vif_cnt;	//0 is arbitary value, give weight to check QOS algorithm working.
 	vif->min_credit = 0;		//arbitary
 	vif->max_credit = 0;		//arbitary
 	vif->remaining_credit = 0; 

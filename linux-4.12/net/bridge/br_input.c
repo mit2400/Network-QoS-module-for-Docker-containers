@@ -265,7 +265,7 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 		return RX_HANDLER_PASS;
 #else
 	if (unlikely(skb->pkt_type == PACKET_LOOPBACK)) {
-		printk(KERN_DEBUG "packet:loopback.\n");
+		//printk(KERN_DEBUG "packet:loopback.\n");
 		return RX_HANDLER_PASS;
 	}
 #endif
@@ -275,7 +275,7 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 		goto drop;
 #else
 	if (!is_valid_ether_addr(eth_hdr(skb)->h_source)) {
-		printk(KERN_DEBUG "packet:not valid ethernet address.\n");
+		//printk(KERN_DEBUG "packet:not valid ethernet address.\n");
 		goto drop;
 	}
 #endif
@@ -286,7 +286,7 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 		return RX_HANDLER_CONSUMED;
 #else
 	if (!skb) {
-		printk(KERN_DEBUG "packet:no skb.\n");
+		//printk(KERN_DEBUG "packet:no skb.\n");
 		return RX_HANDLER_CONSUMED;
 	}
 #endif
@@ -301,10 +301,12 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 	//}
 	if((*fp_pay)!=NULL){
 		if(!fp_pay(p->vif,skb->data_len)){
-			printk(KERN_DEBUG "packet:pay fail.\n");
-			goto drop;
+			//printk(KERN_DEBUG "packet:pay fail.\n");
+			//goto drop;
+			//kwlee
+			return RX_HANDLER_ANOTHER;
 		}
-	}
+	}	
 #endif
 	if (p->flags & BR_VLAN_TUNNEL) {
 #ifndef CONFIG_BRIDGE_CREDIT_MODE
@@ -314,7 +316,7 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 #else
 		if (br_handle_ingress_vlan_tunnel(skb, p,
 						  nbp_vlan_group_rcu(p))) {
-			printk(KERN_DEBUG "packet:ingress vlan tunnel set.\n");
+			//printk(KERN_DEBUG "packet:ingress vlan tunnel set.\n");
 			goto drop;
 		}
 #endif
@@ -354,13 +356,13 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 			*pskb = skb;
 			__br_handle_local_finish(skb);
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-			printk(KERN_DEBUG "packet:Bridge Group Address.\n");
+			//printk(KERN_DEBUG "packet:Bridge Group Address.\n");
 #endif
 			return RX_HANDLER_PASS;
 
 		case 0x01:	/* IEEE MAC (Pause) */
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-			printk(KERN_DEBUG "packet:Pause packet.\n");
+			//printk(KERN_DEBUG "packet:Pause packet.\n");
 #endif
 			goto drop;
 
@@ -401,7 +403,7 @@ rx_handler_result_t br_handle_frame(struct sk_buff **pskb)
 
 		/* Deliver packet to local host only */
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-		printk(KERN_DEBUG "packet:local finish.\n");
+		//printk(KERN_DEBUG "packet:local finish.\n");
 #endif
 		NF_HOOK(NFPROTO_BRIDGE, NF_BR_LOCAL_IN, dev_net(skb->dev),
 			NULL, skb, skb->dev, NULL, br_handle_local_finish);
@@ -414,15 +416,15 @@ forward:
 	case BR_STATE_FORWARDING:
 		rhook = rcu_dereference(br_should_route_hook);
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-		printk(KERN_DEBUG "packet:forwarding state.\n");
+		//printk(KERN_DEBUG "packet:forwarding state.\n");
 #endif
 		if (rhook) {
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-			printk(KERN_DEBUG "packet:rhook exist.\n");
+		//	printk(KERN_DEBUG "packet:rhook exist.\n");
 #endif
 			if ((*rhook)(skb)) {
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-				printk(KERN_DEBUG "packet:rhook skb function exist.\n");
+				//printk(KERN_DEBUG "packet:rhook skb function exist.\n");
 #endif
 				*pskb = skb;
 				return RX_HANDLER_PASS;
@@ -432,20 +434,20 @@ forward:
 		/* fall through */
 	case BR_STATE_LEARNING:
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-		printk(KERN_DEBUG "packet:learning state.\n");
+	//	printk(KERN_DEBUG "packet:learning state.\n");
 #endif
 #ifndef CONFIG_BRIDGE_CREDIT_MODE
 		if (ether_addr_equal(p->br->dev->dev_addr, dest))
 			skb->pkt_type = PACKET_HOST;
 #else
 		if (ether_addr_equal(p->br->dev->dev_addr, dest)) {
-			printk(KERN_DEBUG "packet:ehter addr equal.\n");
+			//printk(KERN_DEBUG "packet:ehter addr equal.\n");
 			skb->pkt_type = PACKET_HOST;
 		}
 #endif
 
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
-		printk(KERN_DEBUG "packet:handle frame finish.\n");
+		//printk(KERN_DEBUG "packet:handle frame finish.\n");
 #endif
 		NF_HOOK(NFPROTO_BRIDGE, NF_BR_PRE_ROUTING,
 			dev_net(skb->dev), NULL, skb, skb->dev, NULL,
