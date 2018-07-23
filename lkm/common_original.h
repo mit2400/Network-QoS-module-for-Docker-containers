@@ -16,7 +16,6 @@
 #include <linux/etherdevice.h>
 #include <linux/wait.h>
 #include <linux/sched.h>
-#include <linux/vmalloc.h>
 #include <../../linux-4.12/net/bridge/br_private.h>
 
 //default value
@@ -36,7 +35,7 @@
 
 extern void (*fp_newvif)(struct net_bridge_port *p);
 extern void (*fp_delvif)(struct net_bridge_port *p);
-extern int (*fp_pay)(struct ancs_container *vif, struct sk_buff *skb);
+extern int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
 
 
 struct credit_allocator{
@@ -51,15 +50,9 @@ struct credit_allocator{
 };
 
 
-int pay_credit(struct ancs_container *vif, struct sk_buff *skb);
+int pay_credit(struct ancs_container *vif, unsigned int packet_data_size);
 void new_vif(struct net_bridge_port *p);
 void del_vif(struct net_bridge_port *p);
-//Q
-void* dequeue_skbi(void *queue_head[], unsigned long* tail);
-int enqueue_skbi(void *queue_head[], void *data, unsigned long *head);
-static void init_q_skb(struct ancs_container *vif);
-struct lockfree_queue_skb* get_lockfree_queue_skb(void);
-
 static void credit_accounting(unsigned long data);
 
 struct proc_dir_vif{
@@ -67,11 +60,4 @@ struct proc_dir_vif{
 	int id;
 	struct proc_dir_entry *dir;
 	struct proc_dir_entry *file[10];
-};
-
-//Q
-struct lockfree_queue_skb {
-    unsigned long	head;
-    unsigned long	tail;
-    void*	queue[MAX_SKB_QUEUE_SIZE];
 };

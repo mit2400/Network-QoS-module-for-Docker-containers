@@ -229,64 +229,24 @@ static const struct file_operations vif_opt ={
 	.read = vif_read,
 };
 
-int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
+int pay_credit(struct ancs_container *vif, unsigned int packet_data_size){
 	//if date_len is zero then it means no fragment
 	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, packet_data_size);
 	if(vif->remaining_credit == 0){
 		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
 	}
-	if(vif->remaining_credit < skb->data_len){
+	if(vif->remaining_credit < packet_data_size){
 		//printk(KERN_INFO "PAYMENT FAILURE\n");
-		
-		enqueue_skbi(vif->q_skb->queue, (void*)skb, &vif->q_skb->head);//Q
-		
 		return PAY_FAIL;
 	}
 	else{
-		vif->remaining_credit -= skb->data_len;
+		vif->remaining_credit -= packet_data_size;
 		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
 	}
 	return PAY_SUCCESS;
 }
-
-//Q
-static void init_q_skb(struct ancs_container *vif){
-	vif->q_skb = get_lockfree_queue_skb();	
-}
-
-int enqueue_skbi(void *queue_head[], void *data, unsigned long *head){
-	if(queue_head[*head] != NULL){
-		return -1;
-	}
-	queue_head[*head] = data;
-	*head = (*head + 1)%MAX_SKB_QUEUE_SIZE;
-
-	return 0;
-}
-
-void* dequeue_skbi(void *queue_head[], unsigned long* tail){
-	void* data = queue_head[*tail];
-	if(data == NULL){
-		return NULL;
-	}
-	queue_head[*tail] = NULL;
-	*tail = (*tail + 1)%MAX_SKB_QUEUE_SIZE;
-
-	return data;
-}
-
-struct lockfree_queue_skb* get_lockfree_queue_skb() {
-    struct lockfree_queue_skb* lfq = NULL;
-
-    lfq = vmalloc(sizeof(struct lockfree_queue_skb));
-    memset(lfq, 0, sizeof(struct lockfree_queue_skb));
-
-    return lfq;
-}
-//
-
 
 void new_vif(struct net_bridge_port *p){
 	int idx;
@@ -317,9 +277,6 @@ void new_vif(struct net_bridge_port *p){
 	//update function for credit allocator
 	CA->total_weight += vif->weight;
         CA->num_vif++;
-
-	//Q
-	init_q_skb(vif);
 	
 	//need to implement: proc_fs new
 	idx = vif->id;

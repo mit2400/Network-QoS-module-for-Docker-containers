@@ -55,6 +55,7 @@ struct ancs_container{
 	int id;
 	struct list_head off_list;
 	struct net_bridge_port *p;
+	struct lockfree_queue_skb *q_skb;
 };
 #endif
 
@@ -1125,7 +1126,7 @@ static inline bool nbp_switchdev_allowed_egress(const struct net_bridge_port *p,
 #ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
 extern void (*fp_newvif)(struct net_bridge_port *p);
 extern void (*fp_delvif)(struct net_bridge_port *p);
-extern int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
+extern int (*fp_pay)(struct ancs_container *vif, struct sk_buff *skb);
 
 #endif
 #endif
