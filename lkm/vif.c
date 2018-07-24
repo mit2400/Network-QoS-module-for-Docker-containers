@@ -254,14 +254,17 @@ int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
 //Q
 static void init_q_skb(struct ancs_container *vif){
 	vif->q_skb = get_lockfree_queue_skb();	
+	printk(KERN_INFO "Q: init skb q\n");
 }
 
 int enqueue_skbi(void *queue_head[], void *data, unsigned long *head){
 	if(queue_head[*head] != NULL){
+		printk(KERN_INFO "Q: enq fail, head not null\n");
 		return -1;
 	}
 	queue_head[*head] = data;
 	*head = (*head + 1)%MAX_SKB_QUEUE_SIZE;
+	printk(KERN_INFO "ENQ success\n");
 
 	return 0;
 }
@@ -269,21 +272,24 @@ int enqueue_skbi(void *queue_head[], void *data, unsigned long *head){
 void* dequeue_skbi(void *queue_head[], unsigned long* tail){
 	void* data = queue_head[*tail];
 	if(data == NULL){
+		printk(KERN_INFO "Q: deq fail, tail is null\n");
 		return NULL;
 	}
 	queue_head[*tail] = NULL;
 	*tail = (*tail + 1)%MAX_SKB_QUEUE_SIZE;
+	printk(KERN_INFO "DEQ success\n");
 
 	return data;
 }
 
 struct lockfree_queue_skb* get_lockfree_queue_skb() {
-    struct lockfree_queue_skb* lfq = NULL;
+	struct lockfree_queue_skb* lfq = NULL;
 
-    lfq = vmalloc(sizeof(struct lockfree_queue_skb));
-    memset(lfq, 0, sizeof(struct lockfree_queue_skb));
+	lfq = vmalloc(sizeof(struct lockfree_queue_skb));
+	memset(lfq, 0, sizeof(struct lockfree_queue_skb));
+	printk(KERN_INFO "Q: memmory alloc\n");
 
-    return lfq;
+	return lfq;
 }
 //
 

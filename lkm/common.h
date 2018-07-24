@@ -68,10 +68,3 @@ struct proc_dir_vif{
 	struct proc_dir_entry *dir;
 	struct proc_dir_entry *file[10];
 };
-
-//Q
-struct lockfree_queue_skb {
-    unsigned long	head;
-    unsigned long	tail;
-    void*	queue[MAX_SKB_QUEUE_SIZE];
-};

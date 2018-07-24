@@ -44,6 +44,13 @@
 
 #define CONFIG_BRIDGE_CREDIT_MODE//minkoo
 #ifdef CONFIG_BRIDGE_CREDIT_MODE
+//Q
+struct lockfree_queue_skb {
+    unsigned long       head;
+    unsigned long       tail;
+    void*       queue[320];
+};
+
 struct ancs_container{
 	struct list_head vif_list;
 	bool need_reschedule;
