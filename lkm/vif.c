@@ -231,7 +231,7 @@ static const struct file_operations vif_opt ={
 
 int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
 	//if date_len is zero then it means no fragment
-	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, packet_data_size);
+	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, skb->data_len);
 	if(vif->remaining_credit == 0){
 		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
