@@ -229,19 +229,19 @@ static const struct file_operations vif_opt ={
 	.read = vif_read,
 };
 
-int pay_credit(struct ancs_container *vif, unsigned int packet_data_size){
+int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
 	//if date_len is zero then it means no fragment
 	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, packet_data_size);
 	if(vif->remaining_credit == 0){
 		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
 	}
-	if(vif->remaining_credit < packet_data_size){
+	if(vif->remaining_credit < skb->data_len){
 		//printk(KERN_INFO "PAYMENT FAILURE\n");
 		return PAY_FAIL;
 	}
 	else{
-		vif->remaining_credit -= packet_data_size;
+		vif->remaining_credit -= skb->data_len;
 		//printk(KERN_INFO "PAYMENT SUCCESS\n");
 		return PAY_SUCCESS;
 	}

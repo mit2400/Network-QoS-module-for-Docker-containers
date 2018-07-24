@@ -32,7 +32,7 @@
 
 extern void (*fp_newvif)(struct net_bridge_port *p);
 extern void (*fp_delvif)(struct net_bridge_port *p);
-extern int (*fp_pay)(struct ancs_container *vif, unsigned int packet_data_len);
+extern int (*fp_pay)(struct ancs_container *vif, struct sk_buff *skb);
 
 
 struct credit_allocator{
@@ -47,7 +47,7 @@ struct credit_allocator{
 };
 
 
-int pay_credit(struct ancs_container *vif, unsigned int packet_data_size);
+int pay_credit(struct ancs_container *vif, struct sk_buff *skb);
 void new_vif(struct net_bridge_port *p);
 void del_vif(struct net_bridge_port *p);
 static void credit_accounting(unsigned long data);
