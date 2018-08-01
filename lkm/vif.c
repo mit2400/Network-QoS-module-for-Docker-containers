@@ -236,7 +236,6 @@ static const struct file_operations vif_opt ={
 };
 
 int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
-	static int cnt =0;//test
 	//if date_len is zero then it means no fragment
 	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, skb->data_len);
 	if(vif->remaining_credit == 0){
@@ -308,13 +307,12 @@ struct lockfree_queue_skb* get_lockfree_queue_skb() {
 //wq
 static void work_handler(struct work_struct *work)
 {
-	printd();
 	struct work_data * wd = container_of(work, struct work_data, work);
-//	struct sk_buff *skb; // = vmalloc(sizeof(struct sk_buff));
-	dequeue_skbi(wd->vif->q_skb->queue, &wd->vif->q_skb->tail);
-//	printd();
-//	br_handle_frame(&skb);
-//	printd();
+	struct sk_buff *skb; // = vmalloc(sizeof(struct sk_buff));
+	skb=dequeue_skbi(wd->vif->q_skb->queue, &wd->vif->q_skb->tail);
+	printk(KERN_INFO "work_handler: packet len = %d\n", skb->data_len);
+//	br_handle_frame(&skb);       //@
+	printd();
 
 }
 
@@ -341,14 +339,12 @@ void new_vif(struct net_bridge_port *p){
 	vif->used_credit = 0;	
 	vif->id = vif_cnt++;
 
-	//wq & work data init
+	//wq & work data init @
 	char str[5];
 	sprintf(str, "vif%d", vif->id);
 	vif->wq = create_workqueue(str);
-	printd();
 	vif->wd = vmalloc(sizeof(struct work_data));
 	vif->wd->vif = vif;
-	printd();
 	INIT_WORK(&vif->wd->work, work_handler);
 	printd();
 	
