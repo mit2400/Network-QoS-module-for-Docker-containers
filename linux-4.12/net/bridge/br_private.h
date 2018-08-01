@@ -51,6 +51,12 @@ struct lockfree_queue_skb {
     void*       queue[320];
 };
 
+//WQ
+struct work_data {
+        struct work_struct work;
+        struct ancs_container *vif;
+};
+
 struct ancs_container{
 	struct list_head vif_list;
 	bool need_reschedule;
@@ -63,6 +69,8 @@ struct ancs_container{
 	struct list_head off_list;
 	struct net_bridge_port *p;
 	struct lockfree_queue_skb *q_skb;
+	struct workqueue_struct *wq;
+	struct work_data *wd;
 };
 #endif
 

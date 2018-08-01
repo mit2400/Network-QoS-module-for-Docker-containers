@@ -29,11 +29,11 @@ static void credit_accounting(unsigned long data){
 	if(CA->credit_balance > 0)
 		credit_total += CA->credit_balance;//limit credit balance value
 	
-	if(counter%10==0)	printk("MINKOO%d: credit total %u total:%u credit balance:%u\n",counter,credit_total, total, CA->credit_balance);
+	//if(counter%10==0)	printk("MINKOO%d: credit total %u total:%u credit balance:%u\n",counter,credit_total, total, CA->credit_balance);
 
 	list_for_each_entry_safe(temp_vif, next_vif, &active_vif_list, vif_list){
 		if(!temp_vif)	goto out;
-		if(counter%10==0)	printk("MINKOO: unused credit:%u\n",temp_vif->remaining_credit);
+		//if(counter%10==0)	printk("MINKOO: unused credit:%u\n",temp_vif->remaining_credit);
 		weight_left -= temp_vif->weight;
 		credit_fair = ((credit_total * temp_vif->weight) + (total -1 )) / total;
 		temp_vif->remaining_credit += credit_fair;
@@ -85,7 +85,13 @@ static void credit_accounting(unsigned long data){
 skip:	
 		if(temp_vif->need_reschedule == true)
 			temp_vif->need_reschedule = false;
-		if(counter%10 == 0)printk("MINKOO: vif_id:%d, weight:%u, min:%d, max:%u, credit:%u, credit_fair:%u\n", temp_vif->id, temp_vif->weight, temp_vif->min_credit, temp_vif->max_credit, temp_vif->remaining_credit, credit_fair);
+//		if(counter%10 == 0)printk("MINKOO: vif_id:%d, weight:%u, min:%d, max:%u, credit:%u, credit_fair:%u\n", temp_vif->id, temp_vif->weight, temp_vif->min_credit, temp_vif->max_credit, temp_vif->remaining_credit, credit_fair);
+
+		//wq
+		if(temp_vif->remaining_credit != 0 && temp_vif->q_skb->head != temp_vif->q_skb->tail)
+		{
+			queue_work(temp_vif->wq, &temp_vif->wd->work);
+		}
 	}
 	CA->credit_balance = credit_left;
 	credit_left=0;
@@ -230,6 +236,7 @@ static const struct file_operations vif_opt ={
 };
 
 int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
+	static int cnt =0;//test
 	//if date_len is zero then it means no fragment
 	//printk(KERN_INFO "MINKOO:vif%u remaining credit:%u paying:%u",vif->id,vif->remaining_credit, skb->data_len);
 	if(vif->remaining_credit == 0){
@@ -237,9 +244,11 @@ int pay_credit(struct ancs_container *vif, struct sk_buff *skb){
 		return PAY_SUCCESS;
 	}
 	if(vif->remaining_credit < skb->data_len){
-		//printk(KERN_INFO "PAYMENT FAILURE\n");
+		printk(KERN_INFO "PAYMENT FAILURE\n");
 		
-		enqueue_skbi(vif->q_skb->queue, (void*)skb, &vif->q_skb->head);//Q
+		//Q
+		enqueue_skbi(vif->q_skb->queue, (void*)skb, &vif->q_skb->head);
+		printd();
 		
 		return PAY_FAIL;
 	}
@@ -257,14 +266,18 @@ static void init_q_skb(struct ancs_container *vif){
 	printk(KERN_INFO "Q: init skb q\n");
 }
 
+int empty_skbi(struct ancs_container *vif){
+	return vif->q_skb->head == vif->q_skb->tail;
+}
+
 int enqueue_skbi(void *queue_head[], void *data, unsigned long *head){
 	if(queue_head[*head] != NULL){
 		printk(KERN_INFO "Q: enq fail, head not null\n");
 		return -1;
 	}
 	queue_head[*head] = data;
-	*head = (*head + 1)%MAX_SKB_QUEUE_SIZE;
-	printk(KERN_INFO "ENQ success\n");
+	//printk(KERN_INFO "Q: ENQ%d success\n",(struct sk_buff*)queue_head[*head]->data_len);
+	*head = (*head + 1)%MAX_SKB_QUEUE_SIZE;	
 
 	return 0;
 }
@@ -276,8 +289,8 @@ void* dequeue_skbi(void *queue_head[], unsigned long* tail){
 		return NULL;
 	}
 	queue_head[*tail] = NULL;
+	//printk(KERN_INFO "Q: DEQ%d success\n",(struct sk_buff*)queue_head[*tail]->data_len);
 	*tail = (*tail + 1)%MAX_SKB_QUEUE_SIZE;
-	printk(KERN_INFO "DEQ success\n");
 
 	return data;
 }
@@ -291,6 +304,20 @@ struct lockfree_queue_skb* get_lockfree_queue_skb() {
 
 	return lfq;
 }
+
+//wq
+static void work_handler(struct work_struct *work)
+{
+	printd();
+	struct work_data * wd = container_of(work, struct work_data, work);
+//	struct sk_buff *skb; // = vmalloc(sizeof(struct sk_buff));
+	dequeue_skbi(wd->vif->q_skb->queue, &wd->vif->q_skb->tail);
+//	printd();
+//	br_handle_frame(&skb);
+//	printd();
+
+}
+
 //
 
 
@@ -313,6 +340,17 @@ void new_vif(struct net_bridge_port *p){
 	vif->remaining_credit = 0; 
 	vif->used_credit = 0;	
 	vif->id = vif_cnt++;
+
+	//wq & work data init
+	char str[5];
+	sprintf(str, "vif%d", vif->id);
+	vif->wq = create_workqueue(str);
+	printd();
+	vif->wd = vmalloc(sizeof(struct work_data));
+	vif->wd->vif = vif;
+	printd();
+	INIT_WORK(&vif->wd->work, work_handler);
+	printd();
 	
 	vif->p =p;
 	p->vif=vif;
@@ -326,6 +364,7 @@ void new_vif(struct net_bridge_port *p){
 
 	//Q
 	init_q_skb(vif);
+	printd();
 	
 	//need to implement: proc_fs new
 	idx = vif->id;
@@ -360,8 +399,14 @@ void del_vif(struct net_bridge_port *p){
 	//update function for credit allocator
 	CA->total_weight -= p->vif->weight;
         CA->num_vif--;
-	
-	
+
+		
+	//destory wq
+	printd();
+	flush_workqueue(p->vif->wq);
+	destroy_workqueue(p->vif->wq);
+	printd();	
+
 	//need to implerment: proc_fs del	
 	idx = p->vif->id;
 	remove_proc_entry("min_credit", proc_vif[idx].dir);

@@ -26,6 +26,7 @@
 #ifdef CONFIG_BRIDGE_CREDIT_MODE//minkoo
 int (*fp_pay)(struct ancs_container *vif, struct sk_buff *skb);
 EXPORT_SYMBOL(fp_pay);
+EXPORT_SYMBOL(br_handle_frame);
 #endif
 
 /* Hook for brouter */

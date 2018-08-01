@@ -17,11 +17,12 @@
 #include <linux/wait.h>
 #include <linux/sched.h>
 #include <linux/vmalloc.h>
+#include <linux/workqueue.h>
 #include <../../linux-4.12/net/bridge/br_private.h>
 
 //default value
 #define CONFIG_BRIDGE_CREDIT_MODE
-#define MAX_CREDIT 18800000	
+#define MAX_CREDIT 1880000	
 #define MIN_CREDIT 100000
 
 //Q
@@ -50,11 +51,11 @@ struct credit_allocator{
 	int num_vif;
 };
 
-
 int pay_credit(struct ancs_container *vif, struct sk_buff *skb);
 void new_vif(struct net_bridge_port *p);
 void del_vif(struct net_bridge_port *p);
 //Q
+int empty_skbi(struct ancs_container *vif);
 void* dequeue_skbi(void *queue_head[], unsigned long* tail);
 int enqueue_skbi(void *queue_head[], void *data, unsigned long *head);
 static void init_q_skb(struct ancs_container *vif);
@@ -68,3 +69,13 @@ struct proc_dir_vif{
 	struct proc_dir_entry *dir;
 	struct proc_dir_entry *file[10];
 };
+
+//wq
+static void work_handler(struct work_struct *work);
+
+
+//for debuging
+
+#define printd() \
+    printk(KERN_ALERT "workqueue_test: %s %d\n", __FUNCTION__, __LINE__);
+
